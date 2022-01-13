@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>숫자 야구</title>
+    <style>
+        /* SBO 글자 색깔 커스텀하기 */
+    </style>
+</head>
+<body>
+    <h1>숫자 야구 게임</h1>
+    <div>결과: <span id="result"></span></div>
+    <div>아웃 횟수: <span id="out">0</span></div>
+    <div>도전 횟수: <span id="cnt">0</span></div>
+    <div>추측한 숫자: <span id="guess"></span></div>
+    <input type="text" autofocus>
+    <button>입력</button>
+    <h3>기록</h3>
+    <div id="log"></div>
+
+
+<script>
+    // 이미 시도한 값 입력 차단해야함
+    confirm('숫자야구 게임을 시작하시겠습니까?');
+    alert('서로 다른 4자리 숫자를 추측해주세요.')
+
+    // 중복 숫자 검사 함수
+    const repetitionCheck = (number) => {
+        if (number.length !== 4) {
+            return false;
+        }
+        for (let i = 0; i < 4; i++) {
+            for (let j = i + 1; j < 4; j++) {
+                if (number[i] === number[j]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    //서로 다른 4가지 숫자 무작위 생성
+    let number;
+    while (true) {
+        number = String(Math.round(Math.random() * 10000));
+        if (number.length === 3) {
+            number = '0' + number;
+        }
+        if (repetitionCheck(number) === true) {
+            break;
+        } 
+    }
+    // let number = '1234';
+
+    const $guess = document.querySelector('#guess');
+    const $input = document.querySelector('input');
+    const $button = document.querySelector('button');
+    const $result = document.querySelector('#result');
+    const $out = document.querySelector('#out');
+    const $cnt = document.querySelector('#cnt');
+    const $log = document.querySelector('#log');
+    let cnt = 0;
+    let guess;
+    let out = 0;
+    let result = '';
+    const onInput = (event) => {
+        guess = event.target.value;
+    }
+    const onClickButton = () => {
+        // 입력값 오류
+        if (isNaN(guess) || !repetitionCheck(guess)) {
+            alert('서로 다른 숫자 4개를 입력해 주세요.');
+            $input.value = '';
+            $input.focus();
+            return;
+        } 
+        cnt++;
+        $cnt.textContent = cnt;
+        $guess.textContent = guess;
+        // 홈런
+        if (guess === number) {
+            result = 'Homerun';
+            $result.textContent = result;
+            $input.removeEventListener('input', onInput);
+            $button.removeEventListener('click', onClickButton);
+            return alert('홈런입니다!');
+
+        }
+        // 기회 소진 패배
+        if (cnt === 10) {
+            $input.removeEventListener('input', onInput);
+            $button.removeEventListener('click', onClickButton);
+            return alert(`기회가 소진되었습니다. 패배입니다.\n정답은 ${number}입니다.`);
+        }
+        // 스트라이크와 볼
+        // indexOf 써도 됨. find랑 같은 역할
+        // forEach 쓰자. for i in li랑 똑같은 것
+        let strike = 0;
+        let ball = 0;
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                if (guess[i] === number[j]) {
+                    if (i === j) {
+                        strike++;
+                    } else {
+                        ball++;
+                    }
+                }
+            }
+        }
+        // 아웃
+        if (strike === 0 && ball === 0) {
+            out++;
+            result = 'out';
+            $result.textContent = result;
+            $out.textContent = out;
+            $log.append(`\n${cnt}회. ${guess}: ${result}`, document.createElement('br'));
+            $input.value = '';
+            $input.focus();
+            if (out === 3) {
+                $input.removeEventListener('input', onInput);
+                $button.removeEventListener('click', onClickButton);
+                return alert(`삼진아웃입니다. 패배입니다.\n정답은 ${number}입니다.`);
+            }
+            return;
+        }
+        result = `${strike}S ${ball}B`;
+        $result.textContent = result;
+        $log.append(`\n${cnt}회. ${guess}: ${result}`, document.createElement('br'));
+        $input.value = '';
+        $input.focus();
+    }
+
+    $input.addEventListener('input', onInput);
+    $button.addEventListener('click', onClickButton);
+</script>
+</body>
+</html>

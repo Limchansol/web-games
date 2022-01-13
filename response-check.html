@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Response Speed Check</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  #screen {
+    background-position: center;
+    height: 50vh;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+  }
+
+  #screen.waiting {
+    background-color: rgb(14, 126, 255);
+  }
+
+  #screen.ready {
+    background-color: tomato;
+  }
+
+  #screen.now {
+    background-color: rgb(19, 151, 19);
+  }
+</style>
+</head>
+
+<body>
+<div id="screen" class="waiting">대기 중입니다.<br>화면을 클릭해서 시작하세요.</div>
+<!-- <h3>반응 시간 기록</h3> -->
+<br>
+<div><b>평균 시간: </b><span id="mean"></span></div>
+<div><b>현재 시간: </b><span id="current"></span></div>
+<div id="record"></div>
+
+
+<script>
+  const $screen = document.querySelector('#screen');
+  const $mean = document.querySelector('#mean');
+  const $current = document.querySelector('#current');
+  const $record = document.querySelector('#record');
+  let timeoutID;
+  let startTime;
+  let endTime;
+  const records = [];
+  const clickNow = () => {
+    startTime = new Date();  // 시작 시간 측정
+    $screen.classList.replace('ready', 'now');
+    $screen.textContent = '지금 클릭하세요!';
+  }
+  const onClickScreen = () => {
+    switch ($screen.className) {
+      case 'waiting':
+        $screen.classList.replace('waiting', 'ready');
+        $screen.textContent = '초록색이 되면 클릭하세요.';
+        timeoutID = setTimeout(clickNow, Math.random() * 2000 + 1000);  // 1~3초 사이
+        break;
+      case 'ready':
+        alert('너무 빨리 클릭했습니다.');
+        clearTimeout(timeoutID);  // 타이머 끔
+        $screen.classList.replace('ready', 'waiting');
+        $screen.innerHTML = '대기 중입니다.<br>화면을 클릭해서 시작하세요.';
+        break;
+      case 'now':
+        endTime = new Date();  // 끝 시간 측정
+        const timeTaken = endTime - startTime;
+        records.push(timeTaken);
+        const sum = records.reduce((a, c) => a + c, 0)
+        const mean = (sum / records.length).toFixed(2);  // 평균 속도 계산
+        $mean.textContent = `${mean}ms`;
+        // $record.append(`${records.length}. ${timeTaken}ms`, document.createElement('br'));
+        $current.textContent = `${timeTaken}ms`;
+        // 짧은 시간순 정렬
+        const topFive = records.sort((a, b) => a - b).slice(0, 5);
+        $record.textContent = '';
+        topFive.forEach((e, i) => {
+          $record.append(`${i + 1}위: ${e}ms`, document.createElement('br'));
+        });
+        startTime = null;
+        endTime = null;
+        $screen.classList.replace('now', 'waiting');
+        $screen.innerHTML = '대기 중입니다.<br>화면을 클릭해서 시작하세요.';
+    }
+  }
+  $screen.addEventListener('click', onClickScreen);
+
+</script>
+</body>
+
+</html>

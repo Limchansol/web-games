@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쿵쿵따</title>
+</head>
+<body>
+<div><span id="order">1</span>번째 참가자입니다.</div>
+<div>제시어: <span id="word"></span></div>
+<input type="text" autofocus>
+<button>입력</button>
+
+
+<script>
+    const number = parseInt(prompt('참가 인원은 몇 명인가요?'));
+
+    if (number) {  // number가 NaN이면 실행 안함
+        const yesOrNo = confirm(`${number}명으로 게임을 시작하시겠습니까?`);
+        
+        const $input = document.querySelector('input');
+        const $button = document.querySelector('button');
+        const $word = document.querySelector('#word');
+        const $order = document.querySelector('#order');
+        
+        let word;
+        let newWord;
+        
+        const onInput = function(event) {
+            newWord = event.target.value;
+        }
+        
+        const onClickButton = function() {
+            if (newWord.length === 3 && (!word || newWord[0] === word[word.length - 1])) {
+                word = newWord;
+                $word.textContent = word;
+                const order = parseInt($order.textContent);
+                if (order === number) {
+                    $order.textContent = 1;
+                } else {
+                    $order.textContent = order + 1;
+                }
+            } else {
+                alert('틀렸습니다!');
+            }
+            $input.value = '';
+            $input.focus();
+        }
+        
+        $input.addEventListener('input', onInput);
+        $button.addEventListener('click', onClickButton);
+    }
+</script>
+</body>
+</html>

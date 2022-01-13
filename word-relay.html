@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>word-relay</title>
+</head>
+
+<body>
+<div><span id="order">1</span>번째 참가자</div>
+<div>제시어: <span id="word"></span></div>
+<input type="text" autofocus>
+<button>입력</button>
+
+
+<script>
+  const number = parseInt(prompt('몇 명이 참가하나요?'));
+  const yesOrNo = confirm(`${number}명 맞나요?`);
+
+  const $input = document.querySelector('input');
+  const $button = document.querySelector('button');
+  const $word = document.querySelector('#word');
+  const $order = document.querySelector('#order');
+
+  let word;  // 제시어
+  let newWord;  // 입력한 단어
+  // 입력한 단어 자바로 가져오는 함수
+  const onInput = (event) => {
+    newWord = event.target.value;
+  }
+  const onClickButton = () => {
+
+    if (!word || newWord[0] === word[word.length - 1]) {
+      word = newWord;  // 입력 단어 → 제시어
+      $word.textContent = word;  // 화면에 제시어 나타남
+      // 순서 넘기기
+      const order = parseInt($order.textContent);
+      if (order === number) {
+        $order.textContent = 1;
+      } else {
+        $order.textContent = order + 1;
+      }
+
+    } else {
+      alert('틀렸습니다!');
+    }
+    $input.value = '';  // 입력 후에 다시 빈칸으로
+    $input.focus();  // 커서 autofocus
+  };
+  $input.addEventListener('input', onInput);
+  $button.addEventListener('click', onClickButton);
+</script>
+</body>
+
+</html>

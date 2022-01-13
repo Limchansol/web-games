@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지뢰 찾기</title>
+<style>
+  * { user-select: none; }
+
+  nav {
+    width: 400px;
+    height: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 30px;
+  }
+
+  #timer { display: inline-block; }
+
+  #flag-img {
+    display: inline-block;
+    position: absolute;
+    margin-left: 20px;
+  }
+
+  #result {
+    color: tomato;
+    font-weight: bold;
+    display: inline-block;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+
+  }
+
+  #level {
+    display: inline-block;
+    position: absolute;
+    left: 50%;
+    transform: translateX(250%);
+    border: 2px solid gray;
+    border-radius: 5px;
+    width: 60px;
+    height: 25px;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin: 15px auto;
+  }
+
+  td {
+    border: 1px solid #bbb;
+    background-color: gray;
+    text-align: center;
+  }
+
+  table.lev1 td { width: 40px; height: 40px; }
+  table.lev2 td { width: 30px; height: 30px; }
+  table.lev3 td { width: 25px; height: 25px; }
+
+  td.opened {background-color: white;}
+
+  td.flag {
+    background-image: url('./images/flag.png');
+    background-size: 25px;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  td.question {background-color: orange;}
+
+  td.hoverYes:hover {
+    background-color: darkgray;
+  }
+
+  #reset {
+    display: block;
+    margin: 15px auto;
+  }
+
+</style>
+</head>
+<body>
+<nav>
+  <div id="timer">0초</div>
+  <div id="flag-img"><img src="./images/flag.png" width="20"> <span id="remained-flag">j</span></div>
+  <div id="result">지뢰찾기</div>
+  <select id="level">
+    <option value="lev1">초급</option>
+    <option value="lev2">중급</option>
+    <option value="lev3">고급</option>
+  </select>
+
+</nav>
+<table>
+  <!-- <caption>minesweeper</caption> -->
+</table>
+<button id="reset">다시하기</button>
+
+
+<script>
+  const _dev = false;
+  let _devTable = [];
+  const $timer = document.querySelector('#timer');
+  const $remainedFlag = document.querySelector('#remained-flag');
+  const $result = document.querySelector('#result');
+  const $level = document.querySelector('#level');
+  const $table = document.querySelector('table');
+  const $reset = document.querySelector('#reset');
+  const CODE = {
+    NORMAL: -1,
+    QUESTION: -2,
+    FLAG: -3,
+    QUESTION_MINE: -4,
+    FLAG_MINE: -5,
+    MINE: -6,
+    OPENED: 0,
+  }
+  const levelInfo = {
+    lev1: { row: 10, cell: 10, mine: 10, },
+    lev2: { row: 14, cell: 18, mine: 40, },
+    lev3: { row:19, cell: 24, mine: 95, },
+  }
+  let lev = $level.value;
+  let row = levelInfo[lev]['row'];
+  let cell = levelInfo[lev]['cell'];
+  let mine = levelInfo[lev]['mine'];
+  let remFlag = mine;
+  let data = [];
+  let openCnt = 0;
+  let startTime;
+  let interval;
+
+  // 초급 중급 고급 선택
+  function onChangeLevel() {
+    lev = this.value;
+    row = levelInfo[lev]['row'];
+    cell = levelInfo[lev]['cell'];
+    mine = levelInfo[lev]['mine'];
+    remFlag = mine;
+    reset();
+  }
+  $level.addEventListener('change', onChangeLevel);
+
+  // 주변 지뢰 개수 세기
+  function countMine(rowIndex, cellIndex) {
+    let cntMine = 0;
+    for (let i = rowIndex - 1; i <= rowIndex + 1; i++) {
+      for (let j = cellIndex - 1; j <= cellIndex + 1; j++) {
+        if ([CODE.MINE, CODE.QUESTION_MINE, CODE.FLAG_MINE].includes(data[i]?.[j])) cntMine++;
+      }
+    }
+    return cntMine;
+  }
+  
+  // 칸 열기
+  function open(rowIndex, cellIndex) {
+    if (data[rowIndex]?.[cellIndex] != CODE.NORMAL) return;
+    const target = $table.children[rowIndex]?.children[cellIndex];
+    if (!target) return;
+    const cntMine = countMine(rowIndex, cellIndex);
+    target.textContent = cntMine || '';
+    target.classList.add('opened');
+    target.classList.remove('hoverYes');
+    data[rowIndex][cellIndex] = cntMine;
+    openCnt++;
+    if (openCnt === row * cell - mine) {
+      const time = ((new Date() - startTime) / 1000).toFixed(2);
+      clearInterval(interval);
+      $table.removeEventListener('click', onClickCell);
+      $table.removeEventListener('contextmenu', onRightClickCell);
+      setTimeout(() => {
+        $result.textContent = '성공!';
+        alert(`축하합니다! ${time}초!`);
+      }, 0);
+
+      return;  // 게임끝
+    }
+    return cntMine;
+  }
+  
+  // 주변 칸 열기
+  function openAround(rI, cI) {
+    setTimeout(() => {  // 호출스택 터지는 것 해결 maximum full stack size exceeded
+      const cntMine = open(rI, cI);
+      if (cntMine === 0) {
+        openAround(rI - 1, cI - 1);
+        openAround(rI - 1, cI);
+        openAround(rI - 1, cI + 1);
+        openAround(rI, cI - 1);
+        openAround(rI, cI + 1);
+        openAround(rI + 1, cI - 1);
+        openAround(rI + 1, cI);
+        openAround(rI + 1, cI + 1);
+      }
+    }, 0);
+  }
+  
+  // 이미지 표시 함수
+  function displayIMG(target, src) {
+    const $img = document.createElement('img');
+    $img.src = src;
+    $img.height = 20;
+    target.append($img);
+  }
+
+  // 칸 클릭
+  function onClickCell(event) {
+    const target = event.target;
+    const rowIndex = target.parentNode.rowIndex;
+    const cellIndex = target.cellIndex;
+    const cellData = data[rowIndex]?.[cellIndex];
+
+    // 첫번째 클릭일 때 해당 칸과 그 주변은 지뢰 없도록 지뢰 생성
+    if (openCnt === 0) firstClick(rowIndex, cellIndex);
+
+    if (cellData === CODE.NORMAL) {
+      openAround(rowIndex, cellIndex);
+    } else if (cellData === CODE.MINE) {  // 지뢰
+      $result.textContent = 'BOOM!';
+      target.classList.add('opened');
+      target.classList.remove('hoverYes');
+      target.style.backgroundColor = 'tomato';
+      displayIMG(target, './images/bomb.png');
+      clearInterval(interval);
+      $table.removeEventListener('click', onClickCell);
+      $table.removeEventListener('contextmenu', onRightClickCell);
+      // 게임끝
+    }
+  }
+
+  // 지뢰 표시 및 취소 (우클릭)
+  function onRightClickCell(event) {
+    event.preventDefault();
+    const target = event.target;
+    const rowIndex = target.parentNode.rowIndex;
+    const cellIndex = target.cellIndex;
+    const cellData = data[rowIndex][cellIndex];
+    if (cellData === CODE.MINE) {
+      data[rowIndex][cellIndex] = CODE.FLAG_MINE;
+      target.classList.add('flag');
+      target.classList.remove('hoverYes');
+      remFlag--;
+      $remainedFlag.textContent = `${remFlag}`;
+    } else if (cellData === CODE.FLAG_MINE) {
+      data[rowIndex][cellIndex] = CODE.MINE;
+      target.classList.remove('flag');
+      target.classList.add('hoverYes');
+      remFlag++;
+      $remainedFlag.textContent = `${remFlag}`;
+    } else if (cellData === CODE.NORMAL) {
+      data[rowIndex][cellIndex] = CODE.FLAG;
+      target.classList.add('flag');
+      target.classList.remove('hoverYes');
+      remFlag--;
+      $remainedFlag.textContent = `${remFlag}`;
+    } else if (cellData === CODE.FLAG) {
+      data[rowIndex][cellIndex] = CODE.NORMAL;
+      target.classList.remove('flag');
+      target.classList.add('hoverYes');
+      remFlag++;
+      $remainedFlag.textContent = `${remFlag}`;
+    }
+  }
+ 
+  // 첫 클릭시 타이머 시작 + 지뢰 심기
+  function firstClick(rowIndex, cellIndex) { 
+    // 지뢰 번호 뽑기
+    const tI = (rowIndex * cell) + cellIndex;  // 타겟 인덱스
+    const numbers = Array(row * cell).fill().map((e, i) => i);
+    const exception = [
+      tI - cell - 1, tI - cell, tI - cell + 1, 
+      tI - 1, tI, tI + 1, 
+      tI + cell - 1, tI + cell, tI + cell + 1
+    ];
+    const shuffle = [];
+    while (shuffle.length < mine) {
+      const randomIndex = Math.floor(Math.random() * numbers.length);
+      if (exception.includes(numbers[randomIndex])) continue;
+      shuffle.push(numbers.splice(randomIndex, 1)[0]);
+    }
+    // 지뢰 심기
+    shuffle.forEach((index) => {
+      const ver = Math.floor(index / cell);
+      const hor = index % cell;
+      data[ver][hor] = CODE.MINE;
+      _dev && (_devTable[ver][hor].textContent = 'X');
+    });
+
+    // 타이머 시작
+    startTime = new Date();
+    interval = setInterval(() => {
+      const timeSpent = Math.floor((new Date() - startTime) / 1000);
+      $timer.textContent = `${timeSpent}초`;
+    }, 1000);
+  }
+  
+  // 지뢰찾기 판 만들기 (기본 설정 초급)
+  function initialSetting(row, cell, mine, lev) {
+    // data 틀 만들기
+    for (let i = 0; i < row; i++) {
+      const rowData = [];
+      const $tr = document.createElement('tr');
+      const _devTr = [];
+      for (let j = 0; j < cell; j++) {
+        rowData.push(CODE.NORMAL);
+        const $td = document.createElement('td');
+        $td.classList.add('hoverYes');
+        $tr.append($td);
+        _dev && _devTr.push($td);
+      }
+      data.push(rowData);
+      $table.append($tr);
+      _dev && _devTable.push(_devTr);
+    }
+    $table.className = lev;
+    $table.addEventListener('click', onClickCell);
+    $table.addEventListener('contextmenu', onRightClickCell);
+    $remainedFlag.textContent = `${remFlag}`;
+  }
+  initialSetting(row, cell, mine, lev);
+
+  // 다시하기
+  function reset() {
+    clearInterval(interval);
+    _dev && (_devTable = []);
+    data = [];
+    openCnt = 0;
+    startTime = null;
+    interval = null;
+    remFlag = mine;
+    $table.innerHTML = '';
+    $result.textContent = '지뢰찾기';
+    $timer.textContent = '0초';
+    initialSetting(row, cell, mine, lev); 
+  }
+  $reset.addEventListener('click', reset);
+
+
+
+</script>
+    
+</body>
+</html>

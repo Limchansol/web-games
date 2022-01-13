@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculator</title>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    #calculator {
+        width: 400px;
+        height: 500px;
+        margin: auto;
+        text-align: center;
+    }
+
+    #operator {
+        width: 70px;
+        height: 70px;
+        margin: 5px;
+        text-align: center;
+        border: 2px solid rgb(177, 174, 174);
+        font-size: 22px;
+    }
+
+    #result {
+        width: 240px;
+        height: 70px;
+        margin: 5px;
+        text-align: right;
+        border: 2px solid rgb(177, 174, 174);
+        padding: 10px;
+        font-size: 22px;
+    }
+
+    #calculator button {
+        width: 70px;
+        height: 70px;
+        background-color: #e9e9e9;
+        border: 2px solid #bdbdbd;
+        font-size: 22px;
+        margin:5px;
+    }
+
+    #calculator button:hover {
+        background-color: #d3d1d1;
+    }
+
+    #calculator button:active {
+        background-color: #f3f3f3;
+    }
+</style>
+</head>
+<body>
+<div id="calculator">
+    <input id="operator" readonly>
+    <input id="result" type="number" readonly placeholder="0">
+    <button id="seven">7</button>
+    <button id="eight">8</button>
+    <button id="nine">9</button>
+    <button id="plus">+</button>
+    <button id="four">4</button>
+    <button id="five">5</button>
+    <button id="six">6</button>
+    <button id="minus">-</button>
+    <button id="one">1</button>
+    <button id="two">2</button>
+    <button id="three">3</button>
+    <button id="divi">/</button>
+    <button id="reset">C</button>
+    <button id="zero">0</button>
+    <button id="equal">=</button>
+    <button id="mul">x</button>
+
+</div>
+
+<script>
+    let num1 = '';
+    let operator = '';
+    let num2 = '';
+    let result = '';
+    const $operator = document.querySelector('#operator');
+    const $result = document.querySelector('#result');
+
+    // 화살표 함수는 중괄호와 리턴이 붙으면 생략 가능
+    // 함수 안에 함수, 고차함수. high order funciton
+    const onClickNum = (number) => () => {
+        if (!operator) {
+            num1 += number;
+            $result.value += number;
+            return;
+        }
+        if (!num2) {
+            $result.value = '';
+        }
+        num2 += number;
+        $result.value += number;
+    }
+    document.querySelector('#zero').addEventListener('click', onClickNum('0'));
+    document.querySelector('#one').addEventListener('click', onClickNum('1'));
+    document.querySelector('#two').addEventListener('click', onClickNum('2'));
+    document.querySelector('#three').addEventListener('click', onClickNum('3'));
+    document.querySelector('#four').addEventListener('click', onClickNum('4'));
+    document.querySelector('#five').addEventListener('click', onClickNum('5'));
+    document.querySelector('#six').addEventListener('click', onClickNum('6'));
+    document.querySelector('#seven').addEventListener('click', onClickNum('7'));
+    document.querySelector('#eight').addEventListener('click', onClickNum('8'));
+    document.querySelector('#nine').addEventListener('click', onClickNum('9'));
+
+    // 고차 함수 대신 textContent 가져오기
+    const onClickOperator = (event) => {
+        if (num1 && !num2) {
+            operator = event.target.textContent;
+            $operator.value = operator;
+        } else if (num2) {
+            calculate();
+            operator = event.target.textContent;
+            $operator.value = operator;
+            
+
+        } else {  // 숫자 아무것도 없는 상태에서 연산기호 눌렀을 때
+            alert('올바르지 않은 수식입니다.');
+        }
+    }
+    document.querySelector('#plus').addEventListener('click', onClickOperator);
+    document.querySelector('#minus').addEventListener('click', onClickOperator);
+    document.querySelector('#mul').addEventListener('click', onClickOperator);
+    document.querySelector('#divi').addEventListener('click', onClickOperator);
+
+    const calculate = () => {
+        if (num1 && operator && num2) {
+            switch (operator) {
+                default:
+                    alert('올바르지 않은 수식입니다.');
+                    break;
+                case '+':
+                    result = parseInt(num1) + parseInt(num2);
+                    break;
+                case '-':
+                    result = parseInt(num1) - parseInt(num2);
+                    break;
+                case 'x':
+                    result = parseInt(num1) * parseInt(num2);
+                    break;
+                case '/':
+                    result = parseInt(num1) / parseInt(num2);      
+            }
+        } else {
+            alert('올바르지 않은 수식입니다.');
+        }
+        operator = '';
+        $operator.value = '=';
+        $result.value = result;
+        num1 = result;
+        num2 = '';
+        /* eval 함수 있음. 근데 크롬에서 막아놓음.
+        if (num1 && operator && num2) {
+            result = eval(num1+operator+num2);
+            $operator.value = '=';
+            $result.value = result;
+        } else {
+            alert('올바르지 않은 수식입니다.');
+        } */
+    }
+    document.querySelector('#equal').addEventListener('click', calculate)
+    document.querySelector('#reset').addEventListener('click', () => {
+        num1 = '';
+        operator = '';
+        num2 = '';
+        result = '';
+        $operator.value = '';
+        $result.value = '';
+    })
+</script>
+</body>
+</html>

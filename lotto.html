@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lotto</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    text-align: center;
+  }
+
+  button {
+    border: 2px none gold;
+    border-radius: 50%;
+    background-color: gold;
+    box-shadow: 0px 0px 20px 5px gold;
+    width: 100px;
+    height: 100px;
+    margin: 20px;
+    font-size: 20px;
+  }
+
+  button:hover {
+    background-color: #ffe551;
+  }
+
+  .ball {
+    display: inline-block;
+    border: 2px solid rgb(128, 128, 128);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    line-height: 40px;
+    margin: 5px;
+  }
+</style>
+</head>
+
+<body>
+<button>뽑기</button>
+<h3>추첨 번호는?</h3>
+<div id="winBalls"></div>
+<div id="bonus">보너스: </div>
+
+
+<script>
+  // 내가 입력한 로또 번호랑 추첨 번호랑 얼마나 일치하는지
+
+  confirm('로또 추첨을 시작하시겠습니까?');
+
+  const $button = document.querySelector('button');
+  const onClickButton = () => {
+
+    // 피셔 예이츠 셔플
+    const numbers = Array(45).fill().map((el, i) => i + 1);
+    const shuffle = [];
+    while (numbers.length > 0) {
+      const random = Math.floor(Math.random() * numbers.length);
+      shuffle.push(numbers.splice(random, 1)[0]);
+    }
+    const winBalls = shuffle.slice(0, 6).sort((a, b) => a - b);
+    const bonus = shuffle[6];
+    const $winBalls = document.querySelector('#winBalls');
+    const $bonus = document.querySelector('#bonus');
+
+    // 일정 시간 후 실행
+    const showBall = (ballNum, $location) => () => {
+      const $ball = document.createElement('div');  // HTML에 div 태그 생성
+      $ball.className = 'ball';  // 생성되는 div에 ball 클래스 부여
+      $ball.textContent = ballNum;
+      // 공 색칠
+      if (ballNum < 10) {
+        $ball.style.backgroundColor = '#ffafb0';
+      } else if (ballNum < 20) {
+        $ball.style.backgroundColor = '#f2cfa5';
+      } else if (ballNum < 30) {
+        $ball.style.backgroundColor = '#fafa87';
+      } else if (ballNum < 40) {
+        $ball.style.backgroundColor = '#afffba';
+      } else {
+        $ball.style.backgroundColor = '#aee4ff';
+      }
+      $location.appendChild($ball);
+    }
+    for (let i = 0; i < 6; i++) {
+      const ballNum = winBalls[i];
+      setTimeout(showBall(ballNum, $winBalls), 1000 * (i + 1));
+    }
+    setTimeout(showBall(bonus, $bonus), 7000);
+  }
+
+  $button.addEventListener('click', onClickButton);
+</script>
+</body>
+
+</html>

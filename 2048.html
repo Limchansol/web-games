@@ -28,9 +28,7 @@
     height: 25px;
   }
 
-  #back:hover {
-    background-color: #cfa0a0;
-  }
+  #back:hover { background-color: #cfa0a0; }
 
   table {
     border-collapse: collapse;
@@ -68,11 +66,7 @@
     background-color: darkslategray;
   }
 
-  #reset {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
+  #reset { display: block; margin: 0 auto; }
 
 </style>
 </head>
@@ -95,8 +89,8 @@
   const $back = document.querySelector('#back');
   const $table = document.querySelector('table');
   const $reset = document.querySelector('#reset');
+  const history = {};
   let data = [];
-  let prevData = [];
   let score = 0;
   
   // 게임 끝인지 확인 (2048 달성 || 움직일 수 없음)
@@ -125,8 +119,10 @@
     }, 0);
   }
 
+  // 상하좌우로 움직이기 및 숫자 합치기
   function moveCells(direction) {
-    prevData = JSON.parse(JSON.stringify(data));
+    history.prevData = JSON.parse(JSON.stringify(data));
+    history.prevScore = score;
     switch (direction) {
       case 'left': {
         const newData = [[], [], [], []];
@@ -220,14 +216,26 @@
         break;
       }
     }
-    $score.textContent = `${score}점`;
-    if (JSON.stringify(data) === JSON.stringify(prevData)) return;
+    if (JSON.stringify(data) === JSON.stringify(history.prevData)) return;
     setTimeout(() => {
       createTwoOrFour();
       displayOnScreen();
       checkGameEnd();
     }, 200);
   }
+
+  // 마우스나 키보드는 넓은 범위에서 이동하니까 보통 윈도우나 document에 붙임
+  window.addEventListener('keyup', (event) => {
+    if (event.key === 'ArrowUp') {
+      moveCells('up');
+    } else if (event.key === 'ArrowDown') {
+      moveCells('down');
+    } else if (event.key === 'ArrowLeft') {
+      moveCells('left');
+    } else if (event.key === 'ArrowRight') {
+      moveCells('right');
+    }
+  });
 
   // '2' or '4' 셀 형성
   function createTwoOrFour() {
@@ -253,6 +261,7 @@
         $target.className = `color-${cellData}`;
       });
     });
+    $score.textContent = `${score}점`;
   }
   
   // 테이블 만들고 화면에 나타내기
@@ -286,24 +295,12 @@
 
   // 되돌리기
   function back() {
-    if (!prevData) return;
-    data = JSON.parse(JSON.stringify(prevData));
+    if (!history.prevData) return;
+    data = JSON.parse(JSON.stringify(history.prevData));
+    score = history.prevScore;
     displayOnScreen();
   }
   $back.addEventListener('click', back);
-
-  // 마우스나 키보드는 넓은 범위에서 이동하니까 보통 윈도우나 document에 붙임
-  window.addEventListener('keyup', (event) => {
-    if (event.key === 'ArrowUp') {
-      moveCells('up');
-    } else if (event.key === 'ArrowDown') {
-      moveCells('down');
-    } else if (event.key === 'ArrowLeft') {
-      moveCells('left');
-    } else if (event.key === 'ArrowRight') {
-      moveCells('right');
-    }
-  });
 
   initialSetting();
 

@@ -83,9 +83,10 @@
 <button id="reset">다시하기</button>
 <script>
   /* 버그
-  #1 보드를 빨리 움직이면 setTimeout 때문에 2가 한쪽에 몰아서 생김
+  #1 숫자를 빨리 움직이면 setTimeout 때문에 2가 한쪽에 몰아서 생김 (movable Flag 사용?)
   #2 방향키 누르는 순간 prevData를 업데이트하므로
      움직이지 않는 방향으로 방향키를 누르면 되돌리기 불가
+     (pD 저장하는 임시 변수 만들어놓고 실제 prevData 업데이트 타이밍을 데이터가 이전과 같은지 확인하는 if문 뒤로 늦추기?)
   */
 
   const $score = document.querySelector('#score');

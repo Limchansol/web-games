@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>20482</title>
+<style>
+  * { user-select: none; }
+
+  nav {
+    width: 310px;
+    height: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid black;
+    line-height: 50px;
+  }
+
+  #score {
+    border: 1px solid tomato;
+    display: inline-block;
+  }
+
+  #back {
+    display: inline-block;
+    border: 1px solid blue;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin: 20px auto;
+    background-color: rosybrown;
+  }
+
+  td {
+    background-color: gainsboro;
+    border: 5px solid rosybrown;
+    border-radius: 13px;
+    width: 70px;
+    height: 70px;
+    text-align: center;
+    line-height: 70px;
+    font-size: 30px;
+    font-weight: bold;
+    color: dimgray;
+  }
+
+  .color-2 { background-color: #f3ece5; color: dimgray; }
+  .color-4 { background-color: #ecdbbc; color: dimgray; }
+  .color-8 { background-color: #ffbd84; color: white; }
+  .color-16 { background-color: #f69664; color: white; }
+  .color-32 { background-color: tomato; color: white; }
+  .color-64 { background-color: #ff3d3d; color: white; }
+  .color-128 { background-color: palegoldenrod; color: white; }
+  .color-256 { background-color: #f1e289; color: white; }
+  .color-512 { background-color: #edc950; color: white; }
+  .color-1024 { background-color: #ebc034; color: white; }
+  .color-2048 { background-color: #f0c022; color: white; }
+
+  td:not(.color-0):not(.color-2):not(.color-4):not(.color-8):not(.color-16):not(.color-32)
+  :not(.color-64):not(.color-128):not(.color-256):not(.color-512):not(.color-1024):not(.color-2048) {
+    background-color: darkslategray;
+  }
+
+  #reset {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+</style>
+</head>
+<body>
+<nav>
+  <div id="score">1234점</div>
+  <div id="back">ㄷ</div>
+</nav>
+<table></table>
+<button id="reset">다시하기</button>
+<script>
+  const $score = document.querySelector('#score');
+  const $table = document.querySelector('table');
+  const board = [];
+
+  // 빈칸 중 무작위로 2나 4 생성
+  function createTwoOrFour() {
+    const candidate = [2, 4];
+    const randomNumber = candidate[Math.floor(Math.random() * candidate.length)];
+    const emptyCells = board.flat().filter((v) => !v.textContent);
+    const randomIndex = Math.floor(Math.random() * emptyCells.length);
+    emptyCells[randomIndex].textContent = randomNumber;
+    emptyCells[randomIndex].className = `color-${randomNumber}`;
+  }
+
+  // 셀 무작위 추첨
+  function pickRandomCells(len, num) {
+    const numbers = Array(len).fill().map((e, i) => i);
+    const shuffled = [];
+    while (shuffled.length < num) {
+      const randomIndex = Math.floor(Math.random() * numbers.length);
+      shuffled.push(numbers.splice(randomIndex, 1)[0]);
+    }
+    return shuffled;
+  }
+  
+  // 테이블 만들고 '2' or '4' 중 두개 무작위로 표시
+  function initialSetting() {
+    const $fragment = document.createDocumentFragment();  // 메모리에 저장해놓고 한번에 화면 그림
+    for (let i = 0; i < 4; i++) {
+      const $tr = document.createElement('tr');
+      const rowBoard = [];
+      for (let j = 0; j < 4; j++) {
+        const $td = document.createElement('td');
+        $td.className = 'color-0';
+        $tr.append($td);
+        rowBoard.push($td);
+      }
+      $fragment.append($tr);
+      board.push(rowBoard);
+    }
+    $table.append($fragment);
+    const shuffled = pickRandomCells(16, 2);
+    shuffled.forEach((i) => {
+      board.flat()[i].textContent = 2;
+      board.flat()[i].className = 'color-2';
+      // 나중에 4 표시하는 경우도 추가
+    });
+  }
+
+  function moveCells(direction) {
+    switch (direction) {
+      case 'left':
+        break;
+      case 'right':
+        break;
+      case 'up':
+        break;
+      case 'down':
+        break;
+    }
+  }
+
+
+  // 마우스나 키보드는 넓은 범위에서 이동하니까 보통 윈도우나 document에 붙임
+  window.addEventListener('keyup', (event) => {
+    if (event.key === 'ArrowUp') {
+      moveCells('up');
+    } else if (event.key === 'ArrowDown') {
+      moveCells('down');
+    } else if (event.key === 'ArrowLeft') {
+      moveCells('left');
+    } else if (event.key === 'ArrowRight') {
+      moveCells('right');
+    }
+  });
+
+  initialSetting();
+  setTimeout(() => {
+    createTwoOrFour();
+
+  }, 1000);
+
+</script>
+
+</body>
+
+</html>

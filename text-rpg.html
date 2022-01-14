@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG 게임</title>
+</head>
+<body>
+<!-- 시작 화면 -->
+<form id="start-screen">
+    <input id="name-input" type="text" placeholder="주인공 이름 입력">
+    <button id="start-btn">시작</button>
+</form>
+
+<!-- 게임 화면 -->
+<div id="screen">
+    <!-- 플레이어 스탯 -->
+    <div id="hero-stat">
+        <span id="hero-name" style="font-weight: bold;"></span>
+        <span id="hero-lev"></span>
+        <span id="hero-hp" style="color: tomato;"></span>
+        <span id="hero-xp" style="color: goldenrod;"></span>
+        <span id="hero-att" style="color: dodgerblue;"></span>
+    </div>
+    <!-- 일반 메뉴 -->
+    <form id="game-menu" style="display: none;">
+        <br>
+        <div id="menu1">1. 모험</div>
+        <div id="menu2">2. 휴식</div>
+        <div id="menu3">3. 종료</div>
+        <br>
+        <input id="menu-input" type="number" placeholder="원하는 행동 번호 입력">
+        <button id="menu-btn">입력</button>
+
+    </form>
+    <!-- 몬스터 스탯 -->
+    <div id="monster-stat">
+        <span id="monster-name" style="font-weight: bold;"></span>
+        <span id="monster-hp" style="color: tomato;"></span>
+        <span id="monster-att" style="color: dodgerblue;"></span>
+    </div>
+    <div id="message"></div>
+    <!-- 전투 메뉴 -->
+    <form id="battle-menu" style="display: none;">
+        <br>
+        <div id="battle1">1. 공격</div>
+        <div id="battle2">2. 회복</div>
+        <div id="battle3">3. 도망</div>
+        <br>
+        <input id="battle-input" type="number" placeholder="원하는 행동 번호 입력">
+        <button id="battle-btn">입력</button>
+    </form>
+</div>
+
+
+<script>
+    const $startScreen = document.querySelector('#start-screen');
+    const $gameMenu = document.querySelector('#game-menu');
+    const $battleMenu = document.querySelector('#battle-menu');
+
+    const $heroName = document.querySelector('#hero-name');
+    const $heroLev = document.querySelector('#hero-lev');
+    const $heroHp = document.querySelector('#hero-hp');
+    const $heroXp = document.querySelector('#hero-xp');
+    const $heroAtt = document.querySelector('#hero-att');
+
+    const $message = document.querySelector('#message');
+    const $monsterName = document.querySelector('#monster-name');
+    const $monsterHp = document.querySelector('#monster-hp');
+    const $monsterAtt = document.querySelector('#monster-att');
+
+    const hero = {
+        name: '',
+        lev: 1,
+        maxHp: 100,
+        hp: 100,
+        xp: 0,
+        att: 10,
+        attack(monster) {
+            monster.hp -= this.att;
+            this.hp -= monster.att;
+        },
+        heal(monster) {
+            this.hp += 20;
+            this.hp -= monster.att;
+        },
+    };
+
+    let monster = null;
+    const monsterList = [
+        { name: '달팽이', hp: 25, att: 10, xp: 10 },
+        { name: '슬라임', hp: 50, att: 15, xp: 20 },
+        { name: '핑크빈', hp: 150, att: 35, xp: 50 },
+    ];
+
+    $startScreen.addEventListener('submit', (event) => {
+        event.preventDefault();  // submit 누르면 새로고침되는 기본 성질 제거
+        const name = event.target['name-input'].value;  // form에서는 target['id']로 타겟 불러올 수 있음
+        $startScreen.style.display = 'none';
+        $gameMenu.style.display = 'block';
+        $heroName.textContent = name;
+        $heroLev.textContent = `${hero.lev}Lev`;
+        $heroHp.textContent = `HP: ${hero.hp}/${hero.maxHp}`;
+        $heroXp.textContent = `XP: ${hero.xp}/${hero.lev * 15}`;
+        $heroAtt.textContent = `ATT: ${hero.att}`;
+        hero.name = name;
+    })
+
+    $gameMenu.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const menuChoice = event.target['menu-input'].value;
+        if (menuChoice === '1') {  // 모험
+            // 모험
+            $gameMenu.style.display = 'none';
+            $battleMenu.style.display = 'block';
+            monster = JSON.parse(JSON.stringify(monsterList[Math.floor(Math.random() * monsterList.length)]));
+            monster.maxHp = monster.hp;
+            $monsterName.textContent = `vs ${monster.name}`;
+            $monsterHp.textContent = `HP: ${monster.hp}/${monster.maxHp}`;
+            $monsterAtt.textContent = `ATT: ${monster.att}`;
+
+        } else if (menuChoice === '2') {  // 휴식
+            // 휴식
+        } else if (menuChoice === '3') {  // 종료
+            // 종료
+        } else {
+            alert('1번, 2번, 3번 중 원하는 행동 번호를 입력해 주세요.');
+        }
+    })
+
+    $battleMenu.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const battleChoice = event.target['battle-input'].value;
+        if (battleChoice === '1') {  // 공격
+            hero.attack(monster);
+            monster.attack(hero);
+            $heroHp.textContent = `HP: ${hero.hp}/${hero.maxHp}`;
+            $monsterHp.textContent = `HP: ${monster.hp}/${monster.maxHp}`;
+
+        } else if (battleChoice === '2') {  // 회복
+            // 회복
+        } else if (battleChoice === '3') {  // 도망
+            // 도망
+        } else {
+            alert('1번, 2번, 3번 중 원하는 행동 번호를 입력해 주세요.');
+        }
+    })
+
+
+
+
+</script>
+</body>
+</html>

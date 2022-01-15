@@ -92,10 +92,12 @@
   const history = {};
   let data = [];
   let score = 0;
+  let success = false;
   
   // 게임 끝인지 확인 (2048 달성 || 움직일 수 없음)
   function checkGameEnd() {
-    if (data.flat().includes(2048)) {
+    if (!success && data.flat().includes(2048)) {
+      success = true;
       alert('2048 달성!');
       return;
     }

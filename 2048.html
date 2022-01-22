@@ -94,7 +94,7 @@
   let score = 0;
   let success = false;
   
-  // 게임 끝인지 확인 (2048 달성 || 움직일 수 없음)
+  // 게임 끝인지 확인 (2048 달성 or 움직일 수 없음)
   function checkGameEnd() {
     if (!success && data.flat().includes(2048)) {
       success = true;

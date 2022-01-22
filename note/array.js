@@ -38,6 +38,39 @@ const one = arr[0];
 const three = arr[2];
 const five = arr[4];
 const [one, , three, , five] = arr;  // 자리가 중요
+const [one, two, three, four, five, six] = arr;  // six = undefined;
+const [one, two, three, four, five, six = 'none'] = arr;  // 기본값 작성 가능
+const [one, two, three] = arr;  // 4, 5 는 할당 안됨
+const [one, two, ...three] = arr;  // three = [3, 4, 5];
+
+let first = 'book';
+let second = 'piano';
+[first, second] = [second, first];  // first = 'piano'; second = 'book';
+
+
+const myBestArt = {
+	title: '별이 빛나는 밤에',
+	artist: '빈센트 반 고흐',
+	year: 1889,
+	medium: '유화',
+};
+const { title, artist, year, medium } = myBestArt;
+
+const myBestSong = {
+	title: '무릎',
+	artist: '아이유(IU)',
+	release: '2015.10.23.',
+	lyrics: '모두 잠드는 밤에...'
+};
+const { title: songName, artist:singer, ...rest } = myBestSong;
+
+const menu1 = { name: '아메리카노' };
+const menu2 = { name: '바닐라 라떼', ice: true };
+const menu3 = { name: '카페 모카', ice: false };
+function printMenu(menu) {
+	const { name, ice = true } = menu;
+	console.log(`주문하신 메뉴는 '${ice ? '아이스' : '따뜻한'} ${name}'입니다.`);
+}
 
 const body = document.body;
 const createElement = document.createElement;
@@ -68,5 +101,5 @@ const { a, b: { c, d: { e } } } = obj;
 // every, some
 // flat
 // filter 조건에 해당하는 값 걸러줌
-// 원본 바꿈 push pop shift unshift splice sort
+// 원본 바꿈 push pop shift unshift splice sort reverse
 // 원본 안 바꿈 concat slice filter every some map forEach findIndexOf indcludes ...

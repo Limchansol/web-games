@@ -17,9 +17,15 @@ class Human extends Organism {
     showAge() {
         console.log(this.age);
     }
+    showName() {
+        super.showName();
+        console.log('human');
+    }
 }
-let human;
-human = new Human('chansol', 23);
+const human = new Human('chansol', 23);
 human.showName();  // chansol
 human.showAge();  // 23
+const organism1 = new Organism('asdf', 1, 'hi');
+if (organism1 instanceof Human) console.log(true);  // false
+
 

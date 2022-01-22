@@ -19,16 +19,16 @@
     width: 285px; 
     height: 25px;
     margin: 10px auto;
+    line-height: 25px;
     display: none;
   }
 
-  nav #level {
-    display: inline-block;
+  nav #mole-num { display: inline-block; }
 
-  }
-
-  nav #mole-num {
+  nav #life {
     display: inline-block;
+    position: absolute;
+    left: calc(50% + 38px);
   }
 
   table {
@@ -46,10 +46,24 @@
     text-align: center;
   }
 
-  /* .mole {
-    transform: translateY(50px);
-    transition: 0.5s all ease-in-out;
-  } */
+  button#reset { display: block; margin: 15px auto; }
+
+  .mole {
+    background-image: url('./images/mole.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    /* position: absolute; */
+    /* bottom: 0; */
+    /* transition: bottom 1s; */
+  }
+
+  .bomb {
+    background-image: url('./images/bomb.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+  }
   
 
 </style>
@@ -58,25 +72,27 @@
 <body>
 <button id="start">시작</button>
 <nav>
-  <div id="level">Level 1</div>
   <div id="mole-num">잡은 두더지: 0마리</div>
-  <button id="reset">다시하기</button>
+  <div id="life">남은 목숨: 3개</div>
 </nav>
 <table></table>
+<button id="reset">다시하기</button>
 
 
 <script>
   const $start = document.querySelector('#start');
   const $nav = document.querySelector('nav');
-  const $level = document.querySelector('#level');
+  const $life = document.querySelector('#life');
   const $moleNum = document.querySelector('#mole-num');
   const $reset = document.querySelector('#reset');
   const $table = document.querySelector('table');
   const MOLE_IMG = './images/mole.png';
+  const BOMB_IMG = './images/bomb.png';
   let data = [];
   let row = 4;
   let cell = 4;
   let mole = 0;
+  let life = 3;
   let interval;
 
   function initialSetting() {
@@ -87,7 +103,7 @@
       for (let j = 0; j < 4; j++) {
         rowData.push(0);
         const $td = document.createElement('td');
-        $td.addEventListener('click', hitMole);
+        $td.addEventListener('click', hitMoleAndBomb);
         $tr.append($td);
       }
       data.push(rowData);
@@ -107,59 +123,94 @@
     data.forEach((rowData, i) => {
       rowData.forEach((cellData, j) => {
         const $target = $table.children[i].children[j];
-        if (!cellData) {
-          $target.innerHTML = '';
+        if (cellData === 0) {
+          $target.classList.remove('mole');
+          $target.classList.remove('bomb');
+          // $target.innerHTML = '';
         } else if ($target.children.length === 0) {
-          displayIMG($target, MOLE_IMG);
-          $target.firstElementChild.classList.add('mole');
+          if (cellData === 1) {
+            $target.classList.add('mole');
+            // displayIMG($target, MOLE_IMG);
+            // $target.firstElementChild.classList.add('mole');
+          } else if (cellData === -1) {
+            $target.classList.add('bomb');
+            // displayIMG($target, BOMB_IMG);
+            // $target.firstElementChild.classList.add('bomb');
+          }
         }
       });
     });
   }
   
-
   function onClickStart() {
     this.style.display = 'none';
     $nav.style.display = 'block';
-    createMole();
+    createMoleOrBomb();
     clickable = false;
   }
   $start.addEventListener('click', onClickStart);
   $reset.addEventListener('click', () => location.reload());
 
-  function createMole() {
+  const molePercent = 0.5;
+  const bombPercent = 0.7;
+  function createMoleOrBomb() {
     interval = setInterval(() => {
-      const emptyCells = [];
-      data.forEach((rowData, i) => {
-        rowData.forEach((cellData, j) => {
-          if (!cellData) emptyCells.push([i, j]);
+      const randomValue = Math.random();
+      if (randomValue < bombPercent ) {
+        let randomPick = -1;  // 폭탄
+        if (randomValue < molePercent) randomPick = 1;  // 두더지
+        const emptyCells = [];
+        data.forEach((rowData, i) => {
+          rowData.forEach((cellData, j) => {
+            if (!cellData) emptyCells.push([i, j]);
+          });
         });
-      });
-      const randomIndex = Math.floor(Math.random() * emptyCells.length);
-      const randomCell = emptyCells[randomIndex];
-      data[randomCell[0]][randomCell[1]] = 1;  // 두더지
-      displayOnScreen();
-      if (data.flat().every((cell) => cell)) {
-        clearInterval(interval);
-        setTimeout(() => {
-          alert('두더지를 막지 못했습니다...');
-        }, 0);
+        const randomIndex = Math.floor(Math.random() * emptyCells.length);
+        const randomCell = emptyCells[randomIndex];
+        data[randomCell[0]][randomCell[1]] = randomPick;
+        displayOnScreen();
+        setTimeout(hideMoleAndBomb(randomCell[0], randomCell[1]), 3000);
+        if (data.flat().every((cell) => cell)) {
+          clearInterval(interval);
+          setTimeout(() => {
+            alert('두더지를 막지 못했습니다...');
+          }, 0);
+        }
       }
-    }, 500);
+    }, 1000);
   }
 
-  function hitMole() {
-    if (!this.firstElementChild) return;  // 나중에 miss 뜨도록 바꾸기
+  function hideMoleAndBomb(rI, cI) {
+    return () => {
+      if (data[rI][cI]) {
+        console.log('숨기기');
+        data[rI][cI] = 0;
+        displayOnScreen();
+      }
+    }
+  }
+
+  function hitMoleAndBomb() {
+    // if (!this.firstElementChild) return;  // 나중에 miss 뜨도록 바꾸기
     const rowIndex = this.parentElement.rowIndex;
     const cellIndex = this.cellIndex;
+    if (data[rowIndex][cellIndex] === 1) {
+      mole++;
+      $moleNum.textContent = `잡은 두더지: ${mole}마리`;
+    } else if (data[rowIndex][cellIndex] === -1) {
+      life--;
+      $life.textContent = `남은 목숨: ${life}개`;
+    }
     data[rowIndex][cellIndex] = 0;
-    mole++;
-    $moleNum.textContent = `잡은 두더지: ${mole}마리`;
     displayOnScreen();
+    if (life <= 0) {
+      setTimeout(() => {
+        alert('폭탄이 너무 많이 터졌습니다.');
+      }, 0);
+      clearInterval(interval);
+    }
     // 잡았다는 문구 띄우기
   }
-  
-
 
   initialSetting();
 </script>

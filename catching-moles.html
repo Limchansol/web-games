@@ -61,7 +61,7 @@
   .bomb {
     background-image: url('./images/bomb.png');
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: 50px;
     background-position: center;
   }
   
@@ -169,7 +169,7 @@
         const randomCell = emptyCells[randomIndex];
         data[randomCell[0]][randomCell[1]] = randomPick;
         displayOnScreen();
-        setTimeout(hideMoleAndBomb(randomCell[0], randomCell[1]), 3000);
+        setTimeout(hideMoleAndBomb(randomCell[0], randomCell[1]), 1000);
         if (data.flat().every((cell) => cell)) {
           clearInterval(interval);
           setTimeout(() => {
@@ -177,7 +177,7 @@
           }, 0);
         }
       }
-    }, 1000);
+    }, 500);
   }
 
   function hideMoleAndBomb(rI, cI) {

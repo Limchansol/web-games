@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>두더지 잡기</title>
+<style>
+  * { box-sizing: border-box; user-select: none; }
+  body { margin: 0; padding: 0; }
+
+  button#start {
+    display: block;
+    margin: 10px auto;
+    height: 25px;
+  }
+
+  nav  {
+    width: 285px; 
+    height: 25px;
+    margin: 10px auto;
+    display: none;
+  }
+
+  nav #level {
+    display: inline-block;
+
+  }
+
+  nav #mole-num {
+    display: inline-block;
+  }
+
+  table {
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: #a5612a;
+  }
+
+  td {
+    width: 70px;
+    height: 70px;
+    border: 5px solid #a5612a;
+    background-color: #ebcc7a;
+    border-radius: 50%;
+    text-align: center;
+  }
+
+  /* .mole {
+    transform: translateY(50px);
+    transition: 0.5s all ease-in-out;
+  } */
+  
+
+</style>
+</head>
+
+<body>
+<button id="start">시작</button>
+<nav>
+  <div id="level">Level 1</div>
+  <div id="mole-num">잡은 두더지: 0마리</div>
+  <button id="reset">다시하기</button>
+</nav>
+<table></table>
+
+
+<script>
+  const $start = document.querySelector('#start');
+  const $nav = document.querySelector('nav');
+  const $level = document.querySelector('#level');
+  const $moleNum = document.querySelector('#mole-num');
+  const $reset = document.querySelector('#reset');
+  const $table = document.querySelector('table');
+  const MOLE_IMG = './images/mole.png';
+  let data = [];
+  let row = 4;
+  let cell = 4;
+  let mole = 0;
+  let interval;
+
+  function initialSetting() {
+    const $fragment = document.createDocumentFragment();
+    for (let i = 0; i < 4; i++) {
+      const rowData = [];
+      const $tr = document.createElement('tr');
+      for (let j = 0; j < 4; j++) {
+        rowData.push(0);
+        const $td = document.createElement('td');
+        $td.addEventListener('click', hitMole);
+        $tr.append($td);
+      }
+      data.push(rowData);
+      $fragment.append($tr);
+    }
+    $table.append($fragment);
+  }
+
+  function displayIMG($target, src) {
+    const $img = document.createElement('img');
+    $img.src = src;
+    $img.width = 55;
+    $target.append($img)
+  }
+
+  function displayOnScreen() {
+    data.forEach((rowData, i) => {
+      rowData.forEach((cellData, j) => {
+        const $target = $table.children[i].children[j];
+        if (!cellData) {
+          $target.innerHTML = '';
+        } else if ($target.children.length === 0) {
+          displayIMG($target, MOLE_IMG);
+          $target.firstElementChild.classList.add('mole');
+        }
+      });
+    });
+  }
+  
+
+  function onClickStart() {
+    this.style.display = 'none';
+    $nav.style.display = 'block';
+    createMole();
+    clickable = false;
+  }
+  $start.addEventListener('click', onClickStart);
+  $reset.addEventListener('click', () => location.reload());
+
+  function createMole() {
+    interval = setInterval(() => {
+      const emptyCells = [];
+      data.forEach((rowData, i) => {
+        rowData.forEach((cellData, j) => {
+          if (!cellData) emptyCells.push([i, j]);
+        });
+      });
+      const randomIndex = Math.floor(Math.random() * emptyCells.length);
+      const randomCell = emptyCells[randomIndex];
+      data[randomCell[0]][randomCell[1]] = 1;  // 두더지
+      displayOnScreen();
+      if (data.flat().every((cell) => cell)) {
+        clearInterval(interval);
+        setTimeout(() => {
+          alert('두더지를 막지 못했습니다...');
+        }, 0);
+      }
+    }, 500);
+  }
+
+  function hitMole() {
+    if (!this.firstElementChild) return;  // 나중에 miss 뜨도록 바꾸기
+    const rowIndex = this.parentElement.rowIndex;
+    const cellIndex = this.cellIndex;
+    data[rowIndex][cellIndex] = 0;
+    mole++;
+    $moleNum.textContent = `잡은 두더지: ${mole}마리`;
+    displayOnScreen();
+    // 잡았다는 문구 띄우기
+  }
+  
+
+
+  initialSetting();
+</script>
+  
+</body>
+</html>
